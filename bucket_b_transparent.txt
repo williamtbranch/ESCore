@@ -1,0 +1,87 @@
+# Bucket B — Transparent, high-frequency concrete nouns.
+# These are outside the ESCore prime core ONLY because they are not primes,
+# not because they are hard. They are "week-one" Spanish: instantly anchored
+# by context and illustration. The auditor treats them as low-cost (Bucket B)
+# rather than genuinely-new (Bucket C). See ESCore.md 22.8.
+#
+# Grow this list as new transparent nouns recur across stories. Keep it to
+# concrete, picture-able, ultra-high-frequency nouns. Do NOT add abstract or
+# emotional vocabulary here — those are Bucket C and belong in a story's local
+# whitelist with a contextual-learnability justification.
+#
+# One lemma family per concept; list the surface forms that actually occur.
+
+# Water / sky / earth / fire
+agua
+aguas
+fuego
+fuegos
+sol
+cielo
+tierra
+piedra
+piedras
+
+# Plants
+árbol
+árboles
+
+# People (kinship and basic roles)
+hombre
+hombres
+mujer
+mujeres
+niño
+niña
+niños
+niñas
+madre
+madres
+padre
+padres
+hijo
+hija
+hijos
+hijas
+familia
+familias
+
+# Body parts
+ojo
+ojos
+boca
+bocas
+cara
+caras
+cabeza
+cabezas
+mano
+manos
+pie
+pies
+oreja
+orejas
+
+# Animals
+animal
+animales
+pájaro
+pájaros
+pez
+peces
+
+# Dwelling / path / time-of-day
+casa
+casas
+camino
+caminos
+noche
+noches
+día
+días
+año
+años
+
+# Labels
+nombre
+nombres

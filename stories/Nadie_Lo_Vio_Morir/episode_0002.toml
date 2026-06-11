@@ -1,0 +1,52 @@
+# Illustration prompts for Nadie Lo Vio Morir — Episode 2 "Dos Días"
+# Keys match %%META illustration: <key>%% markers in episode_0002.txt.
+# Copy this file to the Weavelang workspace for conversion/syncing.
+
+[meta]
+story = "Nadie_Lo_Vio_Morir"
+episode = "episode_0002"
+title = "Dos Días"
+
+# ── Character & Style Bible (keep identical in every illustration prompt) ──
+# Rosa — 22, blend of Saoirse Ronan and Lily Collins: fair freckled skin, long
+#   auburn hair, large green eyes; faded blue gingham dress with a cream apron
+#   and worn leather boots.
+# Marco / Daniel — 25, blend of a young Oscar Isaac and Diego Luna: olive skin,
+#   dark wavy hair, short dark beard, intense brown eyes; dark traveler's coat
+#   over a collarless linen shirt. (Past-Daniel: ~20, clean-shaven, plain white
+#   shirt.)
+# Inés — 72, blend of Anjelica Huston and Rita Moreno: deeply lined olive face,
+#   silver hair pulled back, dark knowing eyes; long charcoal-grey dress and a
+#   black fringed shawl.
+# Tomás — 32, blend of Casey Affleck and a young Adam Driver: gaunt pale face,
+#   dark hair greying at the temples, hollow restless eyes; rumpled brown work
+#   jacket over an open-collared shirt.
+# Setting — small remote village of rough stone-and-timber houses with
+#   terracotta roofs and dusty lanes, ringed by dry golden hills; warm earthy
+#   palette, early-1900s rural feel.
+# Style — classic oil painting in the style of Art Nouveau.
+
+[[illustration]]
+key = "ep02_village_day"
+scene = "Morning in the village; everyone is talking about Marco"
+prompt = """Classic oil painting in the style of Art Nouveau. Early morning in a small remote village of rough stone-and-timber houses with terracotta roofs and dusty lanes, ringed by dry golden hills; warm earthy palette, early-1900s rural feel. Golden morning light slants across the lane. Small clusters of villagers in simple early-1900s rural clothing stand close together in doorways and at corners, leaning in, murmuring — every group glancing toward the same far end of the lane. A sense of one word passing from mouth to mouth. No main characters in frame; the village itself is the subject, alive with rumor."""
+
+[[illustration]]
+key = "ep02_marco_ultimatum"
+scene = "Marco publicly gives Tomás two days, in daylight, before the whole village"
+prompt = """Classic oil painting in the style of Art Nouveau. The dusty central lane of a small early-1900s stone-and-timber village at midday, terracotta roofs, dry golden hills beyond; warm earthy palette. Marco — 25, blend of a young Oscar Isaac and Diego Luna, olive skin, dark wavy hair, short dark beard, intense brown eyes, dark traveler's coat over a collarless linen shirt — stands squarely facing Tomás, calm and implacable, one hand slightly raised as he speaks. Tomás — 32, blend of Casey Affleck and a young Adam Driver, gaunt pale face, dark hair greying at the temples, hollow restless eyes, rumpled brown work jacket over an open-collared shirt — recoils half a step, stricken. Around them at a distance, villagers have frozen mid-task to stare. Harsh daylight, no shadows to hide in."""
+
+[[illustration]]
+key = "ep02_tomas_implores_ines"
+scene = "Tomás begs Inés to intercede; she refuses and tells him why she stayed silent"
+prompt = """Classic oil painting in the style of Art Nouveau. The threshold of a rough stone-and-timber house in a small early-1900s village, warm earthy palette, soft afternoon light. Inés — 72, blend of Anjelica Huston and Rita Moreno, deeply lined olive face, silver hair pulled back, dark knowing eyes, long charcoal-grey dress and a black fringed shawl — stands firmly in her doorway, composed and unmoved, her gaze steady and pitiless. Before her, Tomás — 32, blend of Casey Affleck and a young Adam Driver, gaunt pale face, dark hair greying at the temples, hollow restless eyes, rumpled brown work jacket — leans toward her pleading, hands half-raised, desperation in his posture. The doorway frames her like a judge; he stands below in the dust."""
+
+[[illustration]]
+key = "ep02_rosa_confronts_tomas"
+scene = "Day two: Rosa confronts Tomás at his house with what she knows"
+prompt = """Classic oil painting in the style of Art Nouveau. The dim interior doorway of a poor stone-and-timber house in a small early-1900s village, morning light cutting in from behind the visitor; warm earthy palette. Rosa — 22, blend of Saoirse Ronan and Lily Collins, fair freckled skin, long auburn hair, large green eyes, faded blue gingham dress with a cream apron and worn leather boots — stands tall in the doorway, backlit, resolute, speaking hard truth. Tomás — 32, blend of Casey Affleck and a young Adam Driver, gaunt pale face, dark hair greying at the temples, hollow restless eyes, rumpled brown work jacket — sits hunched in the gloom, utterly still, like a man turned to stone, staring at something far away that is not in the room."""
+
+[[illustration]]
+key = "ep02_confession_assembly"
+scene = "Dusk of day two: Tomás stands before the gathered village to confess; Marco watches from afar"
+prompt = """Classic oil painting in the style of Art Nouveau. Dusk in the open central space of a small early-1900s stone-and-timber village, terracotta roofs dark against a fading amber-and-violet sky, first lamps lit; warm earthy palette deepening into night. The whole village is gathered in a wide hushed half-circle. At their center stands Tomás — 32, blend of Casey Affleck and a young Adam Driver, gaunt pale face, dark hair greying at the temples, hollow restless eyes, rumpled brown work jacket — trembling but upright, mid-confession, mouth open on an unfinished word. In the front of the crowd: Rosa — 22, blend of Saoirse Ronan and Lily Collins, fair freckled skin, long auburn hair, large green eyes, faded blue gingham dress — and beside her Inés — 72, blend of Anjelica Huston and Rita Moreno, lined olive face, silver hair, charcoal-grey dress, black fringed shawl. Far at the edge of the gathering, apart from everyone, motionless in shadow: Marco — 25, blend of a young Oscar Isaac and Diego Luna, dark traveler's coat — only watching."""

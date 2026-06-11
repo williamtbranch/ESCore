@@ -1,0 +1,53 @@
+# ESCore Layer 1 — First Expansion Vocabulary
+
+Words and constructions that are semantically irreplaceable but excluded from the ESCore core register.
+Readers comfortable with ESCore are ready for these.
+
+Each entry notes: meaning, what ESCore forces instead, and what is lost in the workaround.
+
+---
+
+## Grammatical Constructions
+
+**The subjunctive mood** — *el subjuntivo*
+
+The subjunctive is not a single word but a verb inflection that Spanish uses pervasively for:
+
+| Use | Example | ESCore workaround |
+|-----|---------|-------------------|
+| Want directed at another's action | *quiero que vengas* [I want you to come] | colon construction: *quiero esto: tú vienes* |
+| Hope / fear | *espero que estés bien* [I hope you are well] | *quiero esto: tú estás bien* |
+| Purpose (*so that*) | *lo hago para que estés bien* [I do it so you are well] | *lo hago. Quiero esto: tú estás bien* (two sentences) |
+| Future temporal clause | *cuando llegues, dime* [when you arrive, tell me] | *cuando estás aquí, dime* (present indicative, slight meaning shift) |
+| Doubt / uncertainty | *no creo que sea bueno* [I don't think it's good] | *pienso que quizá no es bueno* |
+| Indirect command | *dile que venga* [tell him to come] | *dile esto: tienes que venir* |
+
+**Why it belongs in Layer 1 immediately:** Every time one character wants, hopes, fears, or acts for the sake of another character's wellbeing, ESCore requires a workaround. This is not occasional — it is structural. The colon construction (*quiero esto: X*) is a valid substitute but requires the reader to learn an ESCore-specific convention rather than standard Spanish grammar. Layer 1 readers can simply use *que* + present subjunctive in all these cases.
+
+**Layer 1 addition:** unlock `que` + present subjunctive after verbs of wanting, hoping, fearing, and saying (*querer, esperar, tener miedo, decir*).
+
+---
+
+## Motion & Position
+
+**volver** — to return / to come back
+
+- ESCore workaround: colon-want construction (*quiero esto: tú estás aquí. Tienes que venir.*) with a softening preamble
+- What is lost: the single-word force of "come back" as plea; the implied history of a prior departure
+- Why excluded from ESCore: not an NSM prime; the "back" sense (return to origin) is not expressible from COME or MOVE alone
+- Story use: Ch.5 closing — Alice's wordless plea before a dangerous confrontation
+
+---
+
+## Nouns
+
+**`miedo`** — *fear*
+
+The noun for the state of being afraid. In ESCore the emotion exists but cannot be named directly — only described through behavior and want.
+
+| What you want to say | ESCore workaround | What is lost |
+|---|---|---|
+| *tengo miedo* [I am afraid] | describe physical/behavioral state | Naming fear is itself an act of courage; the word does work |
+| *más que tengo miedo de todo* | *más que lo que siento y no quiero sentir* — unwieldy | The contrast collapses; the rhythm breaks |
+
+**Why it belongs in Layer 1**: Fear is one of five or six primal human states that a reader expects to be nameable. ESCore can gesture at fear through sensation words and colon-want constructions (*no quiero esto: algo malo pasa*), but cannot say *I am afraid* the way a person actually says it. Layer 1 unlocks the full emotional vocabulary. `miedo` is the most urgent first entry in that category.

@@ -1,0 +1,34 @@
+# Local whitelist for "John and Alice"
+# Story-specific vocabulary not promoted to global ESCore core.
+# Most of these are setting-specific (restaurant scene) or layer-1 candidates
+# being held locally until a future Layer 1 register is formalized.
+# NOTE: Only lemmas + indicative/infinitive forms allowed. No gerunds, no past
+# tense forms — those are register violations and must be rewritten in prose.
+
+# Food / eating
+comida
+comer
+come
+comen
+
+# Sitting
+sentarse
+sientan
+
+# Faces / smiling
+caras
+sonríe
+sonríen
+sonrisa
+
+# Restaurant actions
+trae
+vuelve
+buscar
+encuentran
+esperan
+delante
+
+# Physical placement (layer-1 candidates)
+poner
+ponen
