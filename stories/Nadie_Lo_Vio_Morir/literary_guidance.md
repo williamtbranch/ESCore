@@ -7,6 +7,75 @@ The critique assumes ESCore story-tier constraints are real constraints, not
 mistakes. The goal is not unconstrained prose; the goal is strong serial writing
 inside a narrow register.
 
+## THE DOCUMENTARY PROBLEM — Governing Principle (Ep 0001 rework, June 2026)
+
+After production (TTS + illustration + YouTube), the editor's verdict on the
+first rendering of Episode 0001: **it reads like a documentary about a story,
+not the story itself.** It is an author's notes — the facts beneath the
+surface — published as if they were the surface. This section supersedes
+anything below that conflicts with it.
+
+### The two layers (fabula vs. surface)
+
+Every scene is made of two distinct things:
+
+1. **The fabula (under the surface):** the chain of facts — Daniel left, words
+   came, Rosa grieves, Tomás lied. This layer lives in the series bible and in
+   beat sheets. It is *never published directly.*
+2. **The surface (the rendering):** what the audience actually sees and hears
+   moment to moment — a meal, a doorway, hands working, a conversation that is
+   ostensibly about something else. The audience assembles the fabula from the
+   surface the way a viewer assembles an image from dabs of oil paint. The
+   painter never puts "a tree" on the canvas; he puts pigment.
+
+**Test for every paragraph:** is this pigment, or is this the author telling
+the viewer what the painting depicts? If a fact is stated by the narrator that
+could instead become apparent through what characters do and say, the paragraph
+fails.
+
+### Scene vs. summary
+
+- A **scene** happens somewhere, at some time, in real time: bodies, objects,
+  speech, action. *Rosa sets a third bowl on the table, sees it, puts it back.*
+- A **summary** compresses and explains: *Rosa was always at his side. She
+  wanted to be with him all the time.*
+- The old Episode 0001 was wall-to-wall summary. The rework target: scenes
+  carry the episode; summary is rationed to brief connective tissue, if used
+  at all.
+- Each scene gets a **surface occupation** (eating, drawing water, mending,
+  walking at night) that is not "about" the plot. The revelation surfaces
+  *through* the occupation. The surface business may seem unrelated — that is
+  what makes it feel like a story.
+
+### Consequences for narration
+
+- The narrator states less; bodies, objects, and dialogue carry the facts.
+- Backstory emerges in fragments inside scenes (an object of Daniel's, a habit
+  Rosa can't drop, a name nobody says at the table) — not in an opening block.
+- Exposition blocks ("A long time before, someone lived in this place...") are
+  banned as openings. If history must be told, a *character* tells it, to
+  someone, for a reason, inside a scene.
+
+### The 15% i+1 vocabulary policy (rework standard)
+
+The vocabulary opens up to serve the rendering:
+
+- **Base register ("i"):** ESCore core wherever possible.
+- **Margin ("+1"):** up to **3 words in 20 (15% of tokens)** may be outside
+  the core, counting all buckets the reader must absorb.
+- **Introduction style:** a new word enters with a natural, in-story indication
+  of where it sits in the learner's mental model — apposition, immediate
+  context, what is done with it. Canonical example:
+  > *Lejos de todos los lugares grandes hay un pueblo, un lugar pequeño donde
+  > la gente conoce a todas las personas de aquí.*
+  `pueblo` is taught by linking it to `lugar` + people living there — inside
+  the sentence's own flow.
+- **Banned style:** NSM-literature explication that sounds like a definition
+  being performed. If the gloss feels intentional, rewrite it until it feels
+  like story.
+- All non-core words still get logged in `series_vocabulary.md`; the budget is
+  bigger, the bookkeeping is the same.
+
 ## What Already Improved In Episode 0001
 
 These issues were identified and then at least partly repaired during the
@@ -138,6 +207,9 @@ These are still live concerns and should shape future episodes.
 
 ## Practical Writing Rules For Episodes 0002+
 
+0. **Scene, not summary.** Every fact the audience needs must surface through
+   a rendered scene (place, time, bodies, objects, speech). Narrator-stated
+   exposition is a defect to be justified, not a default.
 1. Each episode should deliver at least one concrete revelation.
 2. Each episode should contain at least one scene not built around Marco being
    visited for answers.
