@@ -1,0 +1,17 @@
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+
+# VS Code personal settings
+.vscode/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
