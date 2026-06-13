@@ -4,17 +4,21 @@
     fully standalone — without running the WeaveLang application.
 
 .DESCRIPTION
-    Thin wrapper around avd_ul_score.py. It reproduces weavelang's
-    `measure_user_score` math in-process, reading only static assets
-    (the spaCy es_core_news_lg model + the master frequency list) from the
-    weavelang folder. The weavelang GUI/daemon is never launched, so there is
-    no risk of corrupting its project state.
+    Thin wrapper around avd_ul_score.py. It computes ESCore's OWN AVD/UL
+    difficulty metric in-process, reading only static assets (the spaCy
+    es_core_news_lg model + the master frequency list) from the weavelang
+    folder. The weavelang GUI/daemon is never launched, so there is no risk of
+    corrupting its project state.
 
-    Validated parity (matches weavelang exactly):
-        La_Llorona     UL27
-        John_and_Alice UL21
-        Un_Lugar_Bueno UL23
-        Nadie_Lo_Vio   UL24
+    This is NOT a 1:1 replica of weavelang's score: a verb-form rescue step
+    corrects spaCy mis-lemmatizations (enclitic imperatives like "diselo" and
+    guillemet-mistagged verbs like "«Vuelve") that weavelang's raw pipeline
+    leaves as spuriously rare. Relative difficulty ordering still carries over.
+    Reference UL values (corrected scorer):
+        La_Llorona     UL26
+        John_and_Alice UL20
+        Un_Lugar_Bueno UL22
+        Nadie_Lo_Vio   UL23
 
 .PARAMETER Paths
     One or more story .txt files to score (absolute or relative). If omitted,

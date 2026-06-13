@@ -24,14 +24,21 @@ Only STATIC data is read from the weavelang folder (the spaCy model files and
 the frequency list). The weavelang executable / GUI / daemon is never invoked,
 so there is no risk of corrupting its project state.
 
-NOTE - intentional divergences from exact weavelang parity (this is a fast
-pre-screen for simple-register stories, not a 1:1 replica):
+NOTE - intentional divergences from exact weavelang parity. This is ESCore's
+OWN difficulty metric: a fast, linguistically-corrected pre-screen, NOT a 1:1
+replica. We deliberately do not chase weavelang parity — relative difficulty
+ordering is what carries over, and these corrections make that ordering more
+accurate (a story that scores lower here is genuinely easier).
   * Frequency list is trimmed to the top 10k ranks for speed; lemmas not in it
     get UNKNOWN_RANK (20000) instead of being dropped (conservative screen).
   * Proper nouns (spaCy POS == PROPN, e.g. "John"/"Alice") are excluded.
   * A small LEMMA_OVERRIDES table corrects known spaCy mis-lemmatizations.
-For simple stories (target UL <= 24) these do not move the score, because real
-words never reach the p95 mark above 10k; they only affect hard text.
+  * Verb-form rescue (see rescue_verb_lemma) repairs spaCy mis-lemmatizations
+    of enclitic imperatives ("diselo"->decir) and guillemet-mistagged verbs
+    ("«Vuelve"->volver) that otherwise rank as spuriously rare. This lowers the
+    UL of dialogue-heavy text by ~1 versus the old buggy behaviour; that is the
+    correct direction (those verbs are common), so the numbers below differ
+    from weavelang's and from this tool's earlier output by design.
 """
 from __future__ import annotations
 
@@ -79,6 +86,58 @@ EXCLUDED_POS = {"PROPN"}
 # via `--show-rare`. Example: {"sonreir": "sonreir"} (kept here intentionally
 # empty until a real mis-lemmatization is observed).
 LEMMA_OVERRIDES: dict[str, str] = {}
+
+# --- Mis-lemmatized verb-form rescue -----------------------------------------
+# spaCy's es_core_news_lg routinely mangles two classes of conjugated verbs,
+# assigning them garbage lemmas that rank as "rare" and wrongly inflate the
+# score (verified via --show-rare):
+#   1. Imperatives/infinitives/gerunds carrying ENCLITIC PRONOUNS
+#      ("diselo"->"diselir", "pidemelo"->..., "cuentame", "hazlo", "ponme");
+#      some are even mistagged PROPN and silently dropped.
+#   2. Verbs immediately after an opening guillemet « get mistagged NOUN, so a
+#      form like «Vuelve» lemmatizes to "vuelve" (rare) instead of "volver",
+#      even though the SAME word in isolation lemmatizes correctly.
+# We rescue both generically: strip a trailing enclitic-pronoun cluster and/or
+# re-lemmatize the bare word in isolation, accepting the result ONLY when it is
+# a valid infinitive that ranks BETTER than the current lemma. That guard means
+# genuinely rare words can never be "rescued" into looking common.
+
+# Closed set of Spanish enclitic-pronoun clusters (one or two pronouns),
+# longest alternatives first so the regex strips the maximal cluster.
+_ENCLITIC = (
+    r"(?:me|te|se|nos|os)(?:lo|la|le|los|las|les)"  # e.g. -selo, -telo, -melo
+    r"|me|te|se|lo|la|le|nos|os|los|las|les"
+)
+ENCLITIC_RE = re.compile(rf"^(?P<stem>.{{2,}}?)(?:{_ENCLITIC})$", re.IGNORECASE)
+
+# Irregular singular imperative stems (after accent folding) -> infinitive.
+# These do not lemmatize correctly even in isolation, so they are mapped
+# explicitly. Only consulted once an enclitic cluster has been stripped, which
+# unambiguously marks the token as a verb (so "se"->ser, "ve"->ir, etc. cannot
+# collide with the standalone pronoun/word).
+IMPERATIVE_BASE_OVERRIDES: dict[str, str] = {
+    "di": "decir", "haz": "hacer", "pon": "poner", "ten": "tener",
+    "sal": "salir", "ve": "ir", "ven": "venir", "se": "ser", "oye": "oir",
+}
+
+# POS tags whose tokens are candidates for verb rescue. NOUN is deliberately
+# excluded: real nouns ending in enclitic-looking syllables ("tomate", "clase")
+# must never be stripped. PROPN is included because spaCy frequently mistags
+# enclitic imperatives (e.g. "Pidemelo", "Ponme") as proper nouns.
+_RESCUE_POS = {"VERB", "AUX", "PROPN"}
+
+# Fancy quotation marks (incl. Spanish dialogue guillemets) are normalized to
+# spaces before tagging: a verb immediately following « is otherwise mistagged
+# NOUN, which breaks its lemma (e.g. «Vuelve» -> "vuelve" instead of "volver").
+_QUOTE_RE = re.compile(r"[\u00ab\u00bb\u2039\u203a\u201c\u201d\u201e\u201f]")
+
+
+def normalize_quotes(text: str) -> str:
+    return _QUOTE_RE.sub(" ", text)
+
+
+def _looks_like_infinitive(lemma: str) -> bool:
+    return len(lemma) >= 2 and lemma[-2:] in ("ar", "er", "ir")
 
 
 def normalize_spanish_lemma(lemma_str: str) -> str:
@@ -225,20 +284,73 @@ def strip_directives(text: str) -> str:
     )
 
 
-def lemmas_for_text(nlp, text: str) -> list[str]:
+def _isolated_lemma(nlp, word: str, require_verb: bool = False,
+                    _cache: dict[tuple[str, bool], str] = {}) -> str:
+    """Lemmatize a single word out of context (normalized). With
+    ``require_verb`` the result is returned only if spaCy tags the word as a
+    verb in isolation — this rejects non-verbs (e.g. "car" from "Carmelo",
+    tagged PROPN) that merely happen to end in -ar/-er/-ir. Cached."""
+    key = (word, require_verb)
+    if key in _cache:
+        return _cache[key]
+    result = ""
+    for tok in nlp(word):
+        if tok.is_punct or tok.is_space:
+            continue
+        if require_verb and tok.pos_ not in ("VERB", "AUX"):
+            break
+        result = normalize_spanish_lemma(tok.lemma_)
+        break
+    _cache[key] = result
+    return result
+
+
+def rescue_verb_lemma(nlp, ranker: "FrequencyRanker", token, current_rank: int):
+    """Try to recover the correct lemma for a verb form carrying enclitic
+    pronouns ("diselo", "pidemelo", "hazlo", "ponme"). Strips the trailing
+    enclitic cluster and resolves the bare verb. Returns the rescued lemma only
+    if it is a valid infinitive that ranks strictly better than
+    ``current_rank``; otherwise None (leave the token as-is). That guard means
+    a genuinely rare word can never be "rescued" into looking common.
+    """
+    if token.pos_ not in _RESCUE_POS:
+        return None
+    m = ENCLITIC_RE.match(token.text)
+    if not m:
+        return None
+    base = fold_diacritics(m.group("stem").lower())
+    cand = IMPERATIVE_BASE_OVERRIDES.get(base)
+    if cand is None:
+        cand = _isolated_lemma(nlp, base, require_verb=True)
+    if not cand or not _looks_like_infinitive(cand):
+        return None
+    return cand if ranker.rank_of(cand) < current_rank else None
+
+
+def lemmas_for_text(nlp, text: str, ranker: "FrequencyRanker") -> list[str]:
     """Tokenize like linguistic_engine, then screen for this tool:
-    skip punct/space, skip proper nouns (EXCLUDED_POS), apply LEMMA_OVERRIDES,
-    and drop tokens that normalize to an empty lemma (junk/symbols).
+    skip punct/space, apply LEMMA_OVERRIDES, rescue mis-lemmatized verb forms
+    (enclitic pronouns / context mistags), skip proper nouns that are not
+    rescued, and drop tokens that normalize to an empty lemma (junk/symbols).
     """
     doc = nlp(text.strip())
     out: list[str] = []
     for token in doc:
         if token.is_punct or token.is_space:
             continue
-        if token.pos_ in EXCLUDED_POS:
-            continue
         lemma = normalize_spanish_lemma(token.lemma_)
         lemma = LEMMA_OVERRIDES.get(lemma, lemma)
+        rank = ranker.rank_of(lemma) if lemma else UNKNOWN_RANK
+        # Only spend effort rescuing tokens that are currently penalized
+        # (rare/unknown rank) or that would otherwise be dropped (PROPN). This
+        # keeps already-correct rankings untouched.
+        if rank > RARE_RANK_THRESHOLD or token.pos_ == "PROPN" or not lemma:
+            rescued = rescue_verb_lemma(nlp, ranker, token, rank)
+            if rescued is not None:
+                out.append(rescued)
+                continue
+        if token.pos_ in EXCLUDED_POS:
+            continue
         if not lemma:
             continue
         out.append(lemma)
@@ -247,8 +359,8 @@ def lemmas_for_text(nlp, text: str) -> list[str]:
 
 def score_file(path: Path, nlp, ranker: FrequencyRanker) -> dict:
     text = path.read_text(encoding="utf-8")
-    text = strip_directives(text)
-    lemmas = lemmas_for_text(nlp, text)
+    text = normalize_quotes(strip_directives(text))
+    lemmas = lemmas_for_text(nlp, text, ranker)
     ranked_tallies, total_tokens, in_freq, detail = build_metrics(lemmas, ranker)
     avd = calculate_avd(ranked_tallies)
     ul = user_level_from_avd(avd)
