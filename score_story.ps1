@@ -38,7 +38,9 @@ param(
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
     [string[]]$Paths,
 
-    [switch]$Json
+    [switch]$Json,
+
+    [int]$ShowRare = 0
 )
 
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
@@ -92,6 +94,7 @@ if (-not $files -or $files.Count -eq 0) {
 
 $argList = @($Scorer)
 if ($Json) { $argList += '--json' }
+if ($ShowRare -gt 0) { $argList += @('--show-rare', $ShowRare) }
 $argList += $files
 
 & $Python @argList

@@ -1,0 +1,11 @@
+The intent of this story is somewhat of an experiment. Two main requirements is to write a followup story to John and Alice located in a sister directory such that:
+A: The language sounds natural. There are some unnatural phrasings in the first such as talking about putting food in bodies. This does not exist much in natural prose. The intent there was to make clear by context what food and eating are for students. We no longer aim to use NSM style explications to make words clear. We don't need to fully make clear what a word means but at least have some data as to what the word may mean. "After Alice ate, she felt better.". Here "ate" isn't completely clear by context but at least we know that after one does this thing, they can feel better. More use of the word later in the student's life will gradually make the meaning of words clear. So we want natural sounding language over awkward explications. We are free to just render scenes naturally given the constraints to keep the language very simple in general.
+B: The final UL score must be in the range of 20 to 24 after rounding down (ie. 24.6 is fine). I think John and Alice was 21.
+
+The story should be about the same size and can be rendered in the same style. There is very little plot just scenery about two people who like to spend time together and what they feel. We don't need to spell out things. Show, don't tell or over explain.
+
+The iteration. First the story is written in Spanish, then the avd_ul_score.py is ran to get a level. Edit to simplify if needed until we have a truly simple register that fits the score requirements. You are not bound by the ESCore. The whole Spanish language is available but rarer words drive the score up so there is a cost to them. The only requirement is a natural sounding story that scores at 24 or below.
+
+Once this is achieved write a literal English version for review by me. I may do a few edits and push back. The edits go back in the Spanish and the score re-ran. There may need to be more adjustments to bring the score back down due to my edits. If challenging we can discuss. Once we have a good score again repeat the English update and my review.
+
+This cycle goes on until we have a passing story.

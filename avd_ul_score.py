@@ -23,6 +23,15 @@ Pipeline (kept in lock-step with weavelang):
 Only STATIC data is read from the weavelang folder (the spaCy model files and
 the frequency list). The weavelang executable / GUI / daemon is never invoked,
 so there is no risk of corrupting its project state.
+
+NOTE - intentional divergences from exact weavelang parity (this is a fast
+pre-screen for simple-register stories, not a 1:1 replica):
+  * Frequency list is trimmed to the top 10k ranks for speed; lemmas not in it
+    get UNKNOWN_RANK (20000) instead of being dropped (conservative screen).
+  * Proper nouns (spaCy POS == PROPN, e.g. "John"/"Alice") are excluded.
+  * A small LEMMA_OVERRIDES table corrects known spaCy mis-lemmatizations.
+For simple stories (target UL <= 24) these do not move the score, because real
+words never reach the p95 mark above 10k; they only affect hard text.
 """
 from __future__ import annotations
 
@@ -36,8 +45,14 @@ from collections import Counter
 from pathlib import Path
 
 # --- Defaults: static assets borrowed (read-only) from the weavelang repo ---
+SCRIPT_DIR = Path(__file__).resolve().parent
 WEAVELANG_DIR = Path(r"E:\Bill\development\weavelang")
-DEFAULT_FREQ_LIST = WEAVELANG_DIR / "assets" / "frequency_lists" / "es_master_frequency_list.txt"
+# Trimmed top-10k frequency list (generated from the weavelang master list).
+# Using the top 10k ranks instead of the full 3.48M makes startup near-instant
+# because we only Snowball-stem 10k lemmas instead of millions. Any lemma whose
+# stem bucket is NOT in this list is treated as rare (UNKNOWN_RANK) rather than
+# being dropped — a deliberately conservative screen for simple-register stories.
+DEFAULT_FREQ_LIST = SCRIPT_DIR / "assets" / "es_freq_top10k.txt"
 DEFAULT_MODEL_PATH = (
     WEAVELANG_DIR / ".venv" / "Lib" / "site-packages"
     / "es_core_news_lg" / "es_core_news_lg-3.8.0"
@@ -50,6 +65,20 @@ B_FIT = 0.02
 # --- "Gregor effect" cap: rare lemmas (rank > 400) are capped at 0.2% of tokens ---
 TALLY_CAP_FRACTION = 0.002
 RARE_RANK_THRESHOLD = 400
+
+# Rank assigned to any lemma not found in the trimmed frequency list.
+UNKNOWN_RANK = 20000
+
+# Spacy coarse POS tags whose tokens are excluded from scoring entirely
+# (proper nouns like "John"/"Alice" must not count toward difficulty).
+EXCLUDED_POS = {"PROPN"}
+
+# Manual lemma corrections for tokens spaCy mis-lemmatizes. The KEY is the
+# normalized lemma spaCy produced (after normalize_spanish_lemma); the VALUE is
+# the correct dictionary lemma to rank instead. Grow this as bad cases surface
+# via `--show-rare`. Example: {"sonreir": "sonreir"} (kept here intentionally
+# empty until a real mis-lemmatization is observed).
+LEMMA_OVERRIDES: dict[str, str] = {}
 
 
 def normalize_spanish_lemma(lemma_str: str) -> str:
@@ -122,8 +151,9 @@ class FrequencyRanker:
         if not self.bucket_rank:
             raise ValueError(f"Frequency list empty or unparseable: {path}")
 
-    def rank_of(self, lemma: str) -> int | None:
-        return self.bucket_rank.get(self._stem(lemma))
+    def rank_of(self, lemma: str) -> int:
+        """Min rank of the lemma's stem bucket, or UNKNOWN_RANK if absent."""
+        return self.bucket_rank.get(self._stem(lemma), UNKNOWN_RANK)
 
 
 def calculate_avd(ranked_tallies: list[tuple[int, int]]) -> float:
@@ -161,15 +191,17 @@ def build_metrics(lemmas: list[str], ranker: FrequencyRanker):
     counts = Counter(lemmas)
     ranked_tallies: list[tuple[int, int]] = []
     found = 0
+    # Per-lemma (rank, capped_tally) detail for diagnostics (--show-rare).
+    detail: list[tuple[int, int, str]] = []
     for lemma, tally in counts.items():
         rank = ranker.rank_of(lemma)
-        if rank is None:
-            continue  # filter_map drops unknown lemmas
-        found += tally
+        if rank != UNKNOWN_RANK:
+            found += tally
         if rank > RARE_RANK_THRESHOLD and tally > tally_cap:
             tally = tally_cap
         ranked_tallies.append((rank, tally))
-    return ranked_tallies, total_tokens, found
+        detail.append((rank, tally, lemma))
+    return ranked_tallies, total_tokens, found, detail
 
 
 def load_nlp(model_path: Path):
@@ -181,21 +213,43 @@ def load_nlp(model_path: Path):
     return spacy.load("es_core_news_lg", disable=["ner", "parser"])
 
 
+def strip_directives(text: str) -> str:
+    """Remove %%META ...%% directive lines so header metadata (e.g. the words
+    'META', 'on', 'es' in `%%META simple_mode: on%%`) never counts as prose.
+    weavelang consumes these directives before measuring, so stripping them
+    keeps us consistent and avoids junk inflating the rare-word tail.
+    """
+    return "\n".join(
+        line for line in text.splitlines()
+        if not line.lstrip().startswith("%%")
+    )
+
+
 def lemmas_for_text(nlp, text: str) -> list[str]:
-    """Match linguistic_engine tokenize: skip punct/space, normalize lemma."""
+    """Tokenize like linguistic_engine, then screen for this tool:
+    skip punct/space, skip proper nouns (EXCLUDED_POS), apply LEMMA_OVERRIDES,
+    and drop tokens that normalize to an empty lemma (junk/symbols).
+    """
     doc = nlp(text.strip())
     out: list[str] = []
     for token in doc:
         if token.is_punct or token.is_space:
             continue
-        out.append(normalize_spanish_lemma(token.lemma_))
+        if token.pos_ in EXCLUDED_POS:
+            continue
+        lemma = normalize_spanish_lemma(token.lemma_)
+        lemma = LEMMA_OVERRIDES.get(lemma, lemma)
+        if not lemma:
+            continue
+        out.append(lemma)
     return out
 
 
 def score_file(path: Path, nlp, ranker: FrequencyRanker) -> dict:
     text = path.read_text(encoding="utf-8")
+    text = strip_directives(text)
     lemmas = lemmas_for_text(nlp, text)
-    ranked_tallies, total_tokens, in_freq = build_metrics(lemmas, ranker)
+    ranked_tallies, total_tokens, in_freq, detail = build_metrics(lemmas, ranker)
     avd = calculate_avd(ranked_tallies)
     ul = user_level_from_avd(avd)
     return {
@@ -207,6 +261,7 @@ def score_file(path: Path, nlp, ranker: FrequencyRanker) -> dict:
         "avd": round(avd, 2),
         "ul_exact": round(ul, 1),
         "ul": round(ul),
+        "detail": detail,
     }
 
 
@@ -221,6 +276,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH,
                         help="Path to the es_core_news_lg model data directory.")
     parser.add_argument("--json", action="store_true", help="Emit JSON instead of a table.")
+    parser.add_argument("--show-rare", type=int, metavar="N", default=0,
+                        help="After scoring, list the N rarest contributing lemmas "
+                             "(rank, count, lemma) per story — use this to spot "
+                             "mis-lemmatized words or stray proper nouns.")
     args = parser.parse_args(argv)
 
     files = [Path(f) for f in args.files]
@@ -253,6 +312,16 @@ def main(argv: list[str]) -> int:
             f"{r['story']:<{name_w}}  {r['tokens']:>7}  {r['in_freq_list']:>7}  "
             f"{r['avd']:>7.2f}  {r['ul_exact']:>6.1f}  UL{r['ul']:<2}"
         )
+
+    if args.show_rare > 0:
+        for r in results:
+            print(f"\nRarest {args.show_rare} contributing lemmas in {r['story']} "
+                  f"(rank {UNKNOWN_RANK} = not in top-10k list):")
+            print(f"  {'rank':>6}  {'count':>5}  lemma")
+            for rank, tally, lemma in sorted(
+                r["detail"], key=lambda d: (-d[0], -d[1])
+            )[: args.show_rare]:
+                print(f"  {rank:>6}  {tally:>5}  {lemma}")
     return 0
 
 
