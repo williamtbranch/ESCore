@@ -1,6 +1,5 @@
 %%META source_language: es%%
 %%META target_language: es%%
-%%META simple_mode: on%%
 %%META source_is_basic: on%%
 
 Era un buen día. Había mucho sol. John y Alice salieron juntos. No tenían que hacer nada. Solo querían estar juntos.

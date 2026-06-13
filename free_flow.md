@@ -22,7 +22,7 @@ canonical ESCore-compliant text.
 - **The score is the only hard gate.** You are *not* bound by `ESCore.md`,
   `whitelist.txt`, or the audit. The whole Spanish language is available — but
   **rarer words cost more**, so there is a natural pull toward simple vocabulary.
-- **Target: UL 20–24 after rounding down** (e.g. 24.6 is fine). `John_and_Alice`
+- **Target: UL 20–23 after rounding down** (e.g. 23.6 is fine). `John_and_Alice`
   is ~UL21; `John_and_Alice2` lands at UL23.
 
 ---

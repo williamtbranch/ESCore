@@ -80,7 +80,6 @@ stories/
   ```text
   %%META source_language: es%%
   %%META target_language: es%%
-  %%META simple_mode: on%%
   %%META source_is_basic: on%%
   ```
 

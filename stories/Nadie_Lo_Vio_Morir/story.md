@@ -1,0 +1,1 @@
+We are going to update the vocabulary register and style of this story to match that of John_and_Alice2. The story as is is mostly hard to follow. We are relaxing the rules and the new guidelines can be found in free_flow.md in the root directory. 
