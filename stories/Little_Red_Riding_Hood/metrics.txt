@@ -1,0 +1,41 @@
+﻿Little Red Riding Hood
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: PASS
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                25.3 (limit <= 25.5)
+  - iRank:                 440 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       15.0% of running text is unpunished vocabulary
+    * Rare Tokens:         160
+    * Unique Rare Lemmas:  61
+
+User Level (Info-Only):    UL27 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    27.2
+  - UL (rounded floor):    UL27
+  - AVD (tail-weighted):   698.67
+  - p85 Rank:              262
+  - p95 Rank:              917
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          PASS
+  - Spanish Submission:    1,114 words (excluding metadata)
+  - English Source:        1,237 words
+  - Percentage:            90.06% of source (allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      PASS
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        4 (allowed range: 4 - 4)
+  - Actual Count:          4 illustration markers
+    * lrrh_mother_basket
+    * lrrh_meets_wolf
+    * lrrh_wolf_in_bed
+    * lrrh_wolf_falls_roof
