@@ -1,0 +1,30 @@
+# Illustration prompts for Moby Dick — Chapter 002 "The Carpet-Bag"
+# Keys match %%META illustration: <key>%% markers in story.txt.
+
+[meta]
+story = "Moby_Dick"
+chapter = "Chapter_002_The_Carpet_Bag"
+title = "The Carpet-Bag"
+
+# Shared style and continuity live at:
+# stories/Moby_Dick/series_bible.md
+
+[[illustration]]
+key = "ch02_carpet_bag"
+scene = "Ishmael packs his bag and sets out for New Bedford on a freezing Saturday night"
+prompt = "Classic oil painting with subtle maritime realism, cold blue-grey palette. A lean young Ishmael in worn plain neutral wool clothing shoulders his old carpet-bag, walking through the snowy streets of New Bedford at dusk on a bitter winter Saturday. Houses are dark blocks, with a faint dim candle-light here and there. Mood: lonely, cold, and restless."
+
+[[illustration]]
+key = "ch02_swordfish_inn"
+scene = "Ishmael stands outside the glowing red windows of the Sword-Fish Inn, shivering in patched boots"
+prompt = "Classic oil painting with subtle maritime realism, low-saturation winter palette. Ishmael stands on a freezing street where snow lies thick, looking toward the warm, bright red glowing windows of the Sword-Fish Inn. The warm light spills onto the hard ice before the door, but Ishmael remains in the cold shadow, his patched boots worn out. Mood: warmth and comfort seen from cold exile. Natural lamplight."
+
+[[illustration]]
+key = "ch02_the_trap"
+scene = "Ishmael stumbles into a black church (The Trap) by mistake"
+prompt = "Classic oil painting with subtle maritime realism, dim smoky lighting inside a low, wide timber building. Cien dark-faced people in pews turn to look at Ishmael as he stands in the doorway. From a wooden pulpit, a black preacher speaks with great force. Mood: dark, surprising, and ominous. Muted earth and shadow tones."
+
+[[illustration]]
+key = "ch02_spouter_inn_sign"
+scene = "Ishmael looks up at the creaking sign of the Spouter Inn: Peter Coffin"
+prompt = "Classic oil painting with subtle maritime realism, night. Ishmael stands near the cold docks on a bleak corner, looking up at a creaking, swinging wooden sign over the door of a dilapidated gable-ended house. The sign has a faint white painting of a whale's misty water spray and says 'The Whale Tavern: Peter Coffin'. Cold wind Euroclydon howling. Natural moon and lantern light."

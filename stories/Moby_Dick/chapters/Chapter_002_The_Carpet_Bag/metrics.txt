@@ -1,0 +1,41 @@
+Moby Dick — Chapter 2 "The Carpet-Bag"
+DRC Metrics Log — 2026-06-14
+
+====================================================================
+OVERALL STATUS: PASS
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                25.4 (limit <= 25.5)
+  - iRank:                 453 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       14.7% of running text is unpunished vocabulary
+    * Rare Tokens:         156
+    * Unique Rare Lemmas:  95
+
+User Level (Info-Only):    UL30 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    30.1
+  - UL (rounded floor):    UL30
+  - AVD (tail-weighted):   1476.33
+  - p85 Rank:              641
+  - p95 Rank:              1894
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          PASS
+  - Spanish Submission:    1,102 words (excluding metadata)
+  - English Source:        1,437 words
+  - Percentage:            76.69% of source (allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      PASS
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        4 (allowed range: 4 - 4)
+  - Actual Count:          4 illustration markers
+    * ch02_carpet_bag
+    * ch02_swordfish_inn
+    * ch02_the_trap
+    * ch02_spouter_inn_sign

@@ -1,0 +1,29 @@
+# Moby Dick book-level domain lemma policy for avd_ul_score.py
+#
+# Format:
+#   lemma
+#   lemma=rank
+#
+# These lemmas keep a gentler effective rank for scoring:
+# effective_rank = min(raw_rank, policy_rank)
+#
+# Keep this list short and domain-specific. Add only words that are central,
+# repeated, and expected to become familiar by context.
+
+mar
+barco
+bote
+capitan
+mastro=300
+vela=300
+cuerda=300
+puerto=300
+muelle=300
+proa=300
+popa=300
+tripulacion=320
+marinero=320
+ballena=320
+arpon=300
+caza=320
+oceano=320

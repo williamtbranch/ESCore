@@ -5,8 +5,8 @@ Input:
   English_source.txt in the same directory.
 
 Output:
-  chapters/Chapter_001_Loomings/chapter.txt
-  chapters/Chapter_002_The_Carpet_Bag/chapter.txt
+    chapters/Chapter_001_Loomings/source.txt
+    chapters/Chapter_002_The_Carpet_Bag/source.txt
   ...
 """
 
@@ -54,7 +54,7 @@ def split_chapters(source_path: Path, output_root: Path) -> int:
         chapter_dir.mkdir(parents=True, exist_ok=True)
 
         chapter_text = "\n".join(chunk).rstrip() + "\n"
-        (chapter_dir / "chapter.txt").write_text(chapter_text, encoding="utf-8")
+        (chapter_dir / "source.txt").write_text(chapter_text, encoding="utf-8")
 
     return len(chapters)
 

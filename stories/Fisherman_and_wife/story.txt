@@ -1,6 +1,5 @@
 %%META source_language: es%%
 %%META target_language: es%%
-%%META simple_mode: on%%
 %%META source_is_basic: on%%
 
 Había una vez un hombre que vivía con su mujer junto al mar. Vivían en una casa muy pequeña y muy vieja. El hombre iba al mar todos los días. Iba a buscar peces.

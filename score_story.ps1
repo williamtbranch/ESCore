@@ -28,6 +28,14 @@
 .PARAMETER Json
     Emit JSON instead of a table.
 
+.PARAMETER DomainLemmas
+    Optional plain-text domain lemma policy file (one lemma per line; optional
+    '=rank'). Lemmas in this file are scored with a gentler effective rank via
+    avd_ul_score.py (min(raw_rank, policy_rank)).
+
+.PARAMETER DomainDefaultRank
+    Default policy rank used by DomainLemmas lines that do not provide a rank.
+
 .EXAMPLE
     .\score_story.ps1 stories\La_Llorona\La_Llorona.txt
 
@@ -36,15 +44,24 @@
 
 .EXAMPLE
     .\score_story.ps1 -Json stories\Un_Lugar_Bueno\Un_Lugar_Bueno.txt
+
+.EXAMPLE
+    .\score_story.ps1 stories\Moby_Dick\chapters\Chapter_001_Loomings\story.txt -DomainLemmas stories\Moby_Dick\domain_lemmas.txt
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
+    [Parameter(Position = 0)]
     [string[]]$Paths,
 
     [switch]$Json,
 
-    [int]$ShowRare = 0
+    [int]$ShowRare = 0,
+
+    [string]$DomainLemmas,
+
+    [int]$DomainDefaultRank = 320,
+
+    [double]$Coverage = 0.0
 )
 
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
@@ -99,6 +116,16 @@ if (-not $files -or $files.Count -eq 0) {
 $argList = @($Scorer)
 if ($Json) { $argList += '--json' }
 if ($ShowRare -gt 0) { $argList += @('--show-rare', $ShowRare) }
+if ($Coverage -gt 0.0) { $argList += @('--coverage', $Coverage) }
+if ($DomainLemmas) {
+    $policyPath = if ([System.IO.Path]::IsPathRooted($DomainLemmas)) {
+        $DomainLemmas
+    }
+    else {
+        Join-Path $ScriptRoot $DomainLemmas
+    }
+    $argList += @('--domain-lemmas', $policyPath, '--domain-default-rank', $DomainDefaultRank)
+}
 $argList += $files
 
 & $Python @argList

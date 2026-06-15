@@ -85,7 +85,9 @@ EXCLUDED_POS = {"PROPN"}
 # the correct dictionary lemma to rank instead. Grow this as bad cases surface
 # via `--show-rare`. Example: {"sonreir": "sonreir"} (kept here intentionally
 # empty until a real mis-lemmatization is observed).
-LEMMA_OVERRIDES: dict[str, str] = {}
+LEMMA_OVERRIDES: dict[str, str] = {
+    "salgo": "salir",
+}
 
 # --- Mis-lemmatized verb-form rescue -----------------------------------------
 # spaCy's es_core_news_lg routinely mangles two classes of conjugated verbs,
@@ -156,6 +158,72 @@ def normalize_spanish_lemma(lemma_str: str) -> str:
     return s
 
 
+def load_domain_lemma_policy(path: Path, default_rank: int) -> dict[str, int]:
+    """Load a domain-lemma rank policy from a plain-text file.
+
+    Format (one lemma per line, comments allowed with '#'):
+      ballena
+      capitan=260
+      arpon 320
+
+    Lemmas are normalized with normalize_spanish_lemma. Entries map to a target
+    rank used as a FLOOR IMPROVEMENT (effective rank = min(raw_rank, policy_rank)).
+    """
+    if not path.is_file():
+        raise FileNotFoundError(f"Domain lemma policy not found: {path}")
+    if default_rank <= 0:
+        raise ValueError("default_rank must be > 0")
+
+    out: dict[str, int] = {}
+    with path.open("r", encoding="utf-8") as fh:
+        for lineno, raw in enumerate(fh, start=1):
+            line = raw.split("#", 1)[0].strip()
+            if not line:
+                continue
+
+            lemma_part = line
+            rank_part = ""
+            if "=" in line:
+                lemma_part, rank_part = [p.strip() for p in line.split("=", 1)]
+            else:
+                parts = line.split()
+                if len(parts) == 2 and parts[1].isdigit():
+                    lemma_part, rank_part = parts[0], parts[1]
+
+            lemma = normalize_spanish_lemma(lemma_part)
+            if not lemma:
+                print(
+                    f"WARNING: invalid lemma in policy {path}:{lineno}: {lemma_part!r}",
+                    file=sys.stderr,
+                )
+                continue
+
+            if rank_part:
+                try:
+                    rank = int(rank_part)
+                except ValueError:
+                    print(
+                        f"WARNING: invalid rank in policy {path}:{lineno}: {rank_part!r}; "
+                        f"using default {default_rank}",
+                        file=sys.stderr,
+                    )
+                    rank = default_rank
+            else:
+                rank = default_rank
+
+            if rank <= 0:
+                print(
+                    f"WARNING: non-positive rank in policy {path}:{lineno}: {rank}; "
+                    f"using default {default_rank}",
+                    file=sys.stderr,
+                )
+                rank = default_rank
+
+            out[lemma] = rank
+
+    return out
+
+
 _FOLD_MAP = str.maketrans({
     "á": "a", "à": "a", "ä": "a", "â": "a",
     "é": "e", "è": "e", "ë": "e", "ê": "e",
@@ -215,11 +283,17 @@ class FrequencyRanker:
         return self.bucket_rank.get(self._stem(lemma), UNKNOWN_RANK)
 
 
-def calculate_avd(ranked_tallies: list[tuple[int, int]]) -> float:
-    """Port of TextMetrics::calculate_avd_score (metrics.rs)."""
+def calculate_avd(ranked_tallies: list[tuple[int, int]]) -> tuple[float, float, float]:
+    """Port of TextMetrics::calculate_avd_score (metrics.rs).
+
+    Returns ``(avd, p85_rank, p95_rank)``. The two percentile ranks are the
+    most useful diagnostics during iteration: ``p95_rank`` is the rank of the
+    rare tail (the spike words), and ``p85_rank`` is the baseline vocabulary
+    level. AVD is the tail-weighted blend ``(p85 + 2*p95)/3``.
+    """
     total = sum(t for _, t in ranked_tallies)
     if total == 0:
-        return 0.0
+        return 0.0, 0.0, 0.0
     p85_target = math.ceil(total * 0.85)
     p95_target = math.ceil(total * 0.95)
     cumulative = 0
@@ -234,7 +308,8 @@ def calculate_avd(ranked_tallies: list[tuple[int, int]]) -> float:
         if cumulative >= p95_target:
             p95_rank = float(rank)
             break
-    return (p85_rank + 2.0 * p95_rank) / 3.0
+    avd = (p85_rank + 2.0 * p95_rank) / 3.0
+    return avd, p85_rank, p95_rank
 
 
 def user_level_from_avd(avd: float) -> float:
@@ -242,7 +317,70 @@ def user_level_from_avd(avd: float) -> float:
     return A_FIT * math.log(avd + 1.0) + B_FIT
 
 
-def build_metrics(lemmas: list[str], ranker: FrequencyRanker):
+def calculate_i_score(
+    detail: list[tuple[int, int, str]], coverage: float
+) -> dict:
+    """Coverage-based comprehensible-input score (the "i" of i+1).
+
+    Unlike AVD (which tail-weights p85/p95 and so *punishes* novelty), this
+    measures only the difficulty of the comprehensible CORE and leaves the rare
+    tail unpunished. Algorithm (density-based, per Bill's design):
+
+      1. Build the story's own occurrence tally per lemma (already in ``detail``).
+      2. Sort occurrences easiest-first by MASTER rank.
+      3. Accumulate occurrences until cumulative coverage >= ``coverage``.
+      4. ``i_rank`` = master rank of the word at that boundary = "how hard is the
+         hardest word a student must know to comprehend ``coverage`` of the text."
+      5. Everything strictly rarer than ``i_rank`` is the unpunished +1 tail
+         (the new vocabulary the story is free to introduce).
+
+    Repetition is rewarded implicitly: a rare word repeated N times contributes
+    N occurrences toward coverage from a single lemma, so heavily-repeated new
+    words are "taught" rather than penalized. The tail is reported (count, unique
+    lemmas, percent) so "unpunished" never means "unbounded".
+
+    Returns a dict with i_rank, i_level (UL-like ln mapping of the core),
+    coverage, and +1 tail stats.
+    """
+    total = sum(t for _, t, _ in detail)
+    if total == 0:
+        return {
+            "coverage": coverage,
+            "i_rank": 0.0,
+            "i_level": 0.0,
+            "plus1_tokens": 0,
+            "plus1_unique": 0,
+            "plus1_pct": 0.0,
+        }
+
+    target = math.ceil(total * coverage)
+    cumulative = 0
+    i_rank = 0.0
+    for rank, tally, _lemma in sorted(detail, key=lambda d: d[0]):
+        cumulative += tally
+        if cumulative >= target:
+            i_rank = float(rank)
+            break
+
+    # The +1 tail: everything strictly rarer than the core boundary rank.
+    plus1_tokens = sum(t for rank, t, _ in detail if rank > i_rank)
+    plus1_unique = sum(1 for rank, t, _ in detail if rank > i_rank)
+    i_level = A_FIT * math.log(i_rank + 1.0) + B_FIT
+    return {
+        "coverage": coverage,
+        "i_rank": i_rank,
+        "i_level": round(i_level, 1),
+        "plus1_tokens": plus1_tokens,
+        "plus1_unique": plus1_unique,
+        "plus1_pct": round(plus1_tokens / total * 100.0, 1),
+    }
+
+
+def build_metrics(
+    lemmas: list[str],
+    ranker: FrequencyRanker,
+    domain_rank_policy: dict[str, int] | None = None,
+):
     """Replicate TextMetrics::new (capped) with english_word_count = 0."""
     total_tokens = len(lemmas)  # includes lemmas not in the frequency list
     tally_cap = max(1, math.ceil(total_tokens * TALLY_CAP_FRACTION))
@@ -250,17 +388,37 @@ def build_metrics(lemmas: list[str], ranker: FrequencyRanker):
     counts = Counter(lemmas)
     ranked_tallies: list[tuple[int, int]] = []
     found = 0
-    # Per-lemma (rank, capped_tally) detail for diagnostics (--show-rare).
+    domain_adjusted_tokens = 0
+    domain_adjusted_lemmas: set[str] = set()
+    # Per-lemma (rank, RAW_tally) detail for diagnostics (--show-rare) and for
+    # the coverage-based i-score. The raw tally is the true occurrence count;
+    # the "Gregor effect" cap below is applied ONLY to the AVD tallies, never to
+    # this detail list, so coverage math sees real densities.
     detail: list[tuple[int, int, str]] = []
     for lemma, tally in counts.items():
-        rank = ranker.rank_of(lemma)
-        if rank != UNKNOWN_RANK:
+        raw_rank = ranker.rank_of(lemma)
+        rank = raw_rank
+        if domain_rank_policy:
+            policy_rank = domain_rank_policy.get(lemma)
+            if policy_rank is not None and policy_rank < rank:
+                rank = policy_rank
+                domain_adjusted_tokens += tally
+                domain_adjusted_lemmas.add(lemma)
+        if raw_rank != UNKNOWN_RANK:
             found += tally
+        capped_tally = tally
         if rank > RARE_RANK_THRESHOLD and tally > tally_cap:
-            tally = tally_cap
-        ranked_tallies.append((rank, tally))
+            capped_tally = tally_cap
+        ranked_tallies.append((rank, capped_tally))
         detail.append((rank, tally, lemma))
-    return ranked_tallies, total_tokens, found, detail
+    return (
+        ranked_tallies,
+        total_tokens,
+        found,
+        detail,
+        domain_adjusted_tokens,
+        len(domain_adjusted_lemmas),
+    )
 
 
 def load_nlp(model_path: Path):
@@ -317,6 +475,12 @@ def rescue_verb_lemma(nlp, ranker: "FrequencyRanker", token, current_rank: int):
         return None
     m = ENCLITIC_RE.match(token.text)
     if not m:
+        # Standalone conjugated verb forms (e.g. "salgo") can still be
+        # mis-lemmatized by spaCy. Try the token itself in isolation.
+        if token.pos_ in ("VERB", "AUX"):
+            cand = _isolated_lemma(nlp, token.text, require_verb=True)
+            if cand and _looks_like_infinitive(cand) and ranker.rank_of(cand) < current_rank:
+                return cand
         return None
     base = fold_diacritics(m.group("stem").lower())
     cand = IMPERATIVE_BASE_OVERRIDES.get(base)
@@ -357,24 +521,44 @@ def lemmas_for_text(nlp, text: str, ranker: "FrequencyRanker") -> list[str]:
     return out
 
 
-def score_file(path: Path, nlp, ranker: FrequencyRanker) -> dict:
+def score_file(
+    path: Path,
+    nlp,
+    ranker: FrequencyRanker,
+    domain_rank_policy: dict[str, int] | None = None,
+    coverage: float = 0.0,
+) -> dict:
     text = path.read_text(encoding="utf-8")
     text = normalize_quotes(strip_directives(text))
     lemmas = lemmas_for_text(nlp, text, ranker)
-    ranked_tallies, total_tokens, in_freq, detail = build_metrics(lemmas, ranker)
-    avd = calculate_avd(ranked_tallies)
+    (
+        ranked_tallies,
+        total_tokens,
+        in_freq,
+        detail,
+        domain_adjusted_tokens,
+        domain_adjusted_unique,
+    ) = build_metrics(lemmas, ranker, domain_rank_policy)
+    avd, p85_rank, p95_rank = calculate_avd(ranked_tallies)
     ul = user_level_from_avd(avd)
-    return {
+    result = {
         "story": path.name,
         "path": str(path),
         "tokens": total_tokens,
         "in_freq_list": in_freq,
         "unique_lemmas": len({l for l in lemmas if l}),
         "avd": round(avd, 2),
+        "p85_rank": round(p85_rank, 1),
+        "p95_rank": round(p95_rank, 1),
         "ul_exact": round(ul, 1),
         "ul": round(ul),
+        "domain_adjusted_tokens": domain_adjusted_tokens,
+        "domain_adjusted_lemmas": domain_adjusted_unique,
         "detail": detail,
     }
+    if coverage > 0.0:
+        result["i_score"] = calculate_i_score(detail, coverage)
+    return result
 
 
 def main(argv: list[str]) -> int:
@@ -392,6 +576,34 @@ def main(argv: list[str]) -> int:
                         help="After scoring, list the N rarest contributing lemmas "
                              "(rank, count, lemma) per story — use this to spot "
                              "mis-lemmatized words or stray proper nouns.")
+    parser.add_argument(
+        "--domain-lemmas",
+        type=Path,
+        default=None,
+        help=(
+            "Optional plain-text domain lemma policy file (one lemma per line; "
+            "optional '=rank'). Lemmas are mapped to a gentler effective rank "
+            "for scoring (min(raw_rank, policy_rank))."
+        ),
+    )
+    parser.add_argument(
+        "--domain-default-rank",
+        type=int,
+        default=320,
+        help="Default policy rank for domain lemmas without explicit rank.",
+    )
+    parser.add_argument(
+        "--coverage",
+        type=float,
+        default=0.0,
+        metavar="C",
+        help=(
+            "Enable the coverage-based i-score (comprehensible-input metric). "
+            "C is the target known-word coverage of the core, e.g. 0.90 means "
+            "score the hardest word needed to comprehend 90%% of the text and "
+            "leave the rarest 10%% as an unpunished +1 tail. 0 (default) = off."
+        ),
+    )
     args = parser.parse_args(argv)
 
     files = [Path(f) for f in args.files]
@@ -408,7 +620,21 @@ def main(argv: list[str]) -> int:
     print(f"Loading spaCy model: {args.model_path}", file=sys.stderr)
     nlp = load_nlp(args.model_path)
 
-    results = [score_file(f, nlp, ranker) for f in files]
+    domain_rank_policy: dict[str, int] | None = None
+    if args.domain_lemmas is not None:
+        domain_rank_policy = load_domain_lemma_policy(
+            args.domain_lemmas, args.domain_default_rank
+        )
+        print(
+            f"Loaded domain lemma policy: {args.domain_lemmas} "
+            f"({len(domain_rank_policy)} lemmas)",
+            file=sys.stderr,
+        )
+
+    results = [
+        score_file(f, nlp, ranker, domain_rank_policy, args.coverage)
+        for f in files
+    ]
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
@@ -416,14 +642,53 @@ def main(argv: list[str]) -> int:
 
     name_w = max(len(r["story"]) for r in results)
     name_w = max(name_w, len("Story"))
-    header = f"{'Story':<{name_w}}  {'Tokens':>7}  {'InList':>7}  {'AVD':>7}  {'UL(x)':>6}  {'UL':>4}"
+    if args.domain_lemmas is not None:
+        header = (
+            f"{'Story':<{name_w}}  {'Tokens':>7}  {'InList':>7}  {'DomAdj':>7}  "
+            f"{'p85':>6}  {'p95':>6}  {'AVD':>7}  {'UL(x)':>6}  {'UL':>4}"
+        )
+    else:
+        header = (
+            f"{'Story':<{name_w}}  {'Tokens':>7}  {'InList':>7}  "
+            f"{'p85':>6}  {'p95':>6}  {'AVD':>7}  {'UL(x)':>6}  {'UL':>4}"
+        )
     print(header)
     print("-" * len(header))
     for r in results:
+        if args.domain_lemmas is not None:
+            print(
+                f"{r['story']:<{name_w}}  {r['tokens']:>7}  {r['in_freq_list']:>7}  "
+                f"{r['domain_adjusted_tokens']:>7}  {r['p85_rank']:>6.0f}  "
+                f"{r['p95_rank']:>6.0f}  {r['avd']:>7.2f}  "
+                f"{r['ul_exact']:>6.1f}  UL{r['ul']:<2}"
+            )
+        else:
+            print(
+                f"{r['story']:<{name_w}}  {r['tokens']:>7}  {r['in_freq_list']:>7}  "
+                f"{r['p85_rank']:>6.0f}  {r['p95_rank']:>6.0f}  "
+                f"{r['avd']:>7.2f}  {r['ul_exact']:>6.1f}  UL{r['ul']:<2}"
+            )
+
+    # Coverage-based i-score table (comprehensible-input metric). UL above is
+    # kept as info-only difficulty; the i-score is the generation target.
+    if args.coverage > 0.0:
+        cov_pct = args.coverage * 100.0
         print(
-            f"{r['story']:<{name_w}}  {r['tokens']:>7}  {r['in_freq_list']:>7}  "
-            f"{r['avd']:>7.2f}  {r['ul_exact']:>6.1f}  UL{r['ul']:<2}"
+            f"\ni-score (coverage {cov_pct:.0f}%): difficulty of the comprehensible "
+            f"CORE; the rarest {100.0 - cov_pct:.0f}% is unpunished +1 vocabulary."
         )
+        ihdr = (
+            f"{'Story':<{name_w}}  {'iRank':>6}  {'iLevel':>6}  "
+            f"{'+1%':>5}  {'+1tok':>6}  {'+1uniq':>6}"
+        )
+        print(ihdr)
+        print("-" * len(ihdr))
+        for r in results:
+            i = r["i_score"]
+            print(
+                f"{r['story']:<{name_w}}  {i['i_rank']:>6.0f}  {i['i_level']:>6.1f}  "
+                f"{i['plus1_pct']:>5.1f}  {i['plus1_tokens']:>6}  {i['plus1_unique']:>6}"
+            )
 
     if args.show_rare > 0:
         for r in results:

@@ -1,0 +1,70 @@
+# Illustration prompts for Moby Dick — Chapter 001 "Loomings"
+# Keys match %%META illustration: <key>%% markers in story.txt.
+
+[meta]
+story = "Moby_Dick"
+chapter = "Chapter_001_Loomings"
+title = "Loomings"
+
+# Shared style and continuity live at:
+# stories/Moby_Dick/series_bible.md
+
+[[illustration]]
+key = "ch01_call_me_ishmael"
+scene = "Ishmael introduces himself and explains why he goes to sea"
+prompt = "Classic oil painting with subtle maritime realism, mid-19th century setting, cold blue-grey and weathered wood palette. Ishmael, a lean young sailor in plain wool clothing, stands near a harbor rail at dawn, introspective and restless, with distant masts behind him and low mist over the water. Mood: private confession and emotional pressure."
+
+[[illustration]]
+key = "ch01_manhattan_waterfront"
+scene = "Crowds drawn to the waterfront in Manhattan"
+prompt = "Classic oil painting with subtle maritime realism, mid-19th century Manhattan waterfront, dense piers and masts, muted winter light. Many townspeople gather at wharf edges, all facing the water in quiet fascination. Emphasize converging lines toward the sea and a shared, almost magnetic pull."
+
+[[illustration]]
+key = "ch01_every_path_to_water"
+scene = "Meditative image of people inevitably finding water"
+prompt = "Classic oil painting with subtle maritime realism. A symbolic landscape where winding paths descend from high ground toward streams and pools, with lone figures in thought moving toward water. Soft atmospheric perspective, calm but uncanny tone, natural light, no modern elements."
+
+[[illustration]]
+key = "ch01_landscape_needs_water"
+scene = "A beautiful, peaceful landscape that still feels incomplete without water"
+prompt = "Classic oil painting with subtle maritime realism, cold blue-grey and weathered-wood palette. A serene inland scene at midday haze: a small cottage, open land, and a long path under soft sun, composed to feel calm yet strangely lacking. Leave an empty space where water should be, drawing the eye to its absence. Natural light only, no modern elements."
+
+[[illustration]]
+key = "ch01_people_drawn_to_water"
+scene = "People returning again and again to the water's edge to stand and gaze"
+prompt = "Classic oil painting with subtle maritime realism, muted winter light over a working harbor. Scattered figures arrive slowly at the water's edge and linger, some alone, some together, all quietly gazing out to sea. Emphasize repetition and stillness, weathered piers and grey water, restrained mood."
+
+[[illustration]]
+key = "ch01_i_am_the_same"
+scene = "Ishmael alone at the water, drawn back whenever land troubles him"
+prompt = "Classic oil painting with subtle maritime realism, cold blue-grey palette. Ishmael, a lean young sailor in worn plain wool, stands alone at a harbor edge facing open water, calmer than before, as if returning to himself. Low mist, distant masts, introspective and resolved mood. Natural dawn light."
+
+[[illustration]]
+key = "ch01_not_a_passenger"
+scene = "Ishmael chooses sailor life over passenger comfort"
+prompt = "Classic oil painting with subtle maritime realism aboard a working whaling ship in harbor. Ishmael stands near the forecastle among ropes and spars, receiving orders from older crewmen, choosing labor over comfort. Show practical work, worn deck planks, rigging, and salty wind."
+
+[[illustration]]
+key = "ch01_old_captain_orders"
+scene = "An older captain giving orders to Ishmael on deck"
+prompt = "Classic oil painting with subtle maritime realism aboard a working whaling ship. An older weather-cut captain in a sea-worn coat gives orders, while Ishmael, the young sailor in neutral wool, listens and accepts the command with quiet patience. Worn deck planks, ropes and spars, salt haze, restrained tension. Natural daylight."
+
+[[illustration]]
+key = "ch01_paid_as_sailor"
+scene = "The physical, honest working life of a paid sailor at sea"
+prompt = "Classic oil painting with subtle maritime realism on open water, brisk wind. Ishmael works hard among rigging and ropes, wind in his face, body engaged in real labor, tired but content. Weathered planks, ivory sail cloth, cold sea spray, low-saturation tones. Natural light, no modern elements."
+
+[[illustration]]
+key = "ch01_ship_life_order"
+scene = "The clear daily order of life aboard ship from day into night"
+prompt = "Classic oil painting with subtle maritime realism. A quiet sequence-like composition of shipboard routine: standing watch, working, eating, gazing at the water, then dusk settling over the deck as the crew turns toward rest. Calm ordered mood, weathered wood and rope tones, lantern and fading daylight."
+
+[[illustration]]
+key = "ch01_fates_whaling_voyage"
+scene = "The sense of fate pulling Ishmael toward a whaling voyage"
+prompt = "Classic oil painting with subtle maritime realism at dusk. Ishmael stands before a whaling ship in harbor, contemplative, as if recognizing a path that was always waiting for him. Long shadows, darkening sky, masts and rigging in silhouette. Tone: quiet fate and inevitability. Period accurate, natural light."
+
+[[illustration]]
+key = "ch01_whaling_call"
+scene = "The final pull toward whaling and the great white whale"
+prompt = "Classic oil painting with subtle maritime realism at dusk on open sea. A distant whaling ship under darkening sky, with an immense pale whale-form suggested in spray and horizon light, not fully explicit. Tone: fate, awe, and dangerous attraction. Keep period accuracy and restrained drama."
