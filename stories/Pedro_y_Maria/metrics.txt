@@ -1,0 +1,38 @@
+﻿Pedro y Maria
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                24.5 (limit <= 25.5)
+  - iRank:                 367 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       12.0% of running text is unpunished vocabulary
+    * Rare Tokens:         49
+    * Unique Rare Lemmas:  11
+
+User Level (Info-Only):    UL23 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    23.3
+  - UL (rounded floor):    UL23
+  - AVD (tail-weighted):   274.67
+  - p85 Rank:              90
+  - p95 Rank:              367
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          FAIL
+  - Spanish Submission:    462 words (excluding metadata)
+  - English Source:        [none provided]
+  - Percentage:            n/a (auto-fail; allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      SKIP
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        2 (allowed range: 2 - 2)
+  - Actual Count:          0 illustration markers
+    * none

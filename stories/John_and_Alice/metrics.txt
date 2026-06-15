@@ -1,0 +1,38 @@
+﻿John and Alice
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                18.7 (limit <= 25.5)
+  - iRank:                 90 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       11.7% of running text is unpunished vocabulary
+    * Rare Tokens:         88
+    * Unique Rare Lemmas:  22
+
+User Level (Info-Only):    UL19 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    19.7
+  - UL (rounded floor):    UL19
+  - AVD (tail-weighted):   113.33
+  - p85 Rank:              90
+  - p95 Rank:              125
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          FAIL
+  - Spanish Submission:    799 words (excluding metadata)
+  - English Source:        [none provided]
+  - Percentage:            n/a (auto-fail; allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      SKIP
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        3 (allowed range: 3 - 3)
+  - Actual Count:          0 illustration markers
+    * none

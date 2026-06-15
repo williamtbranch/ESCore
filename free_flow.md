@@ -46,6 +46,7 @@ Use **free-flow** when the goal is *natural prose at a controlled difficulty*
 |---|---|
 | `story.md` | The **brief / intent**: requirements, target score, constraints. Authored by the human; do not overwrite it. |
 | `story.txt` | The **Spanish story** that gets scored. Begins with the `%%META ... %%` header block (directives are stripped before scoring). |
+| `metrics.txt` | The **current DRC snapshot** for the folder. Keep this updated as the story changes so the latest i-score, length status, and packaging status are visible without rerunning history in your head. |
 | `story_en.md` | A **literal English translation** for human review. The human marks it up; edits flow back into `story.txt`. |
 | `story.toml` | **Illustration prompt pack** keyed to `%%META illustration: <key>%%` markers in `story.txt` (scene prompts + style constraints). |
 | `series_bible.md` *(recommended)* | Character/scene continuity bible so names, faces, wardrobe, locations, and visual style stay consistent across chapters/episodes. |
@@ -108,12 +109,12 @@ keys stay unique and easy to track across chapters.
 2. **Run DRC text gates** (see §4):
   - **i-score gate passes:** iLevel is ≤ 25.5 at coverage 0.85 (the poorest 15% is unpunished).
   - **Length gate passes:** word count must be **85%–120%** of source.
-  If either check fails, revise and re-run.
+  Update `metrics.txt` after each meaningful scoring pass so the folder always reflects the current DRC state. If either check fails, revise and re-run.
 3. **Write the literal English** in `story_en.md` only once the score passes.
 4. **Human review.** The human edits `story_en.md` inline (often with `#edit -`
    / `#` comment lines explaining the change).
 5. **Apply edits to the Spanish**, re-score (human edits can push the score back
-   up — adjust as needed), then refresh `story_en.md` clean for the next round.
+   up — adjust as needed), refresh `metrics.txt`, then refresh `story_en.md` clean for the next round.
 6. Once text is approved, add `%%META illustration: <key>%%` markers and
   matching `story.toml` keys.
 7. Run final DRC and confirm the illustration-density gate passes.
@@ -131,6 +132,10 @@ Free-flow now uses three checks:
 
 For normal iteration, use the master runner `drc_free_flow.ps1`, which runs all
 checks and returns a combined pass/fail.
+
+Keep the folder's `metrics.txt` in sync with the latest DRC run while the story
+is in progress. Treat it as the current status artifact for the story, not a
+one-time final-delivery report.
 
 ### Environment setup (run this first)
 
@@ -180,6 +185,9 @@ Notes:
 .\drc_free_flow.ps1 `
   -StoryDir stories\Moby_Dick\chapters\Chapter_001_Loomings `
   -Json
+
+# Refresh the folder's metrics.txt after scoring so the current status is saved.
+.\write_metrics.ps1 -StoryDirs stories\Moby_Dick\chapters\Chapter_001_Loomings
 ```
 
 `drc_free_flow.ps1` gates by the **i-score** (using `--coverage 0.85` and gating at `i-level <= 25.5`). The UL score is computed and reported under the UL gate as info-only.
@@ -378,6 +386,7 @@ you may use a **book-level domain lemma policy** file (for example
 
 - [ ] `story.txt` written in natural, simple Spanish (no NSM explications).
 - [ ] Ran `drc_free_flow.ps1` against source and story candidate.
+- [ ] `metrics.txt` refreshed after the latest meaningful story edit / DRC run.
 - [ ] **i-score gate passes:** iLevel is ≤ 25.5 at coverage 0.85 (so the rarest 15% is unpunished).
 - [ ] **UL score is noted:** Reported for the sister app (info-only).
 - [ ] When over budget, ran `-ShowRare` and swapped spike words using the

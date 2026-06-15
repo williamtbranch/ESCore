@@ -1,0 +1,38 @@
+﻿Moby Dick — Chapter 1 "Loomings" (test)
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                23.8 (limit <= 25.5)
+  - iRank:                 308 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       14.9% of running text is unpunished vocabulary
+    * Rare Tokens:         172
+    * Unique Rare Lemmas:  85
+
+User Level (Info-Only):    UL26 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    26.3
+  - UL (rounded floor):    UL26
+  - AVD (tail-weighted):   566.00
+  - p85 Rank:              266
+  - p95 Rank:              716
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          FAIL
+  - Spanish Submission:    1,158 words (excluding metadata)
+  - English Source:        2,226 words
+  - Percentage:            52.02% of source (allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      SKIP
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        5 (allowed range: 5 - 5)
+  - Actual Count:          0 illustration markers
+    * none

@@ -1,0 +1,38 @@
+﻿Fisherman and wife
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                22.7 (limit <= 25.5)
+  - iRank:                 233 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       14.4% of running text is unpunished vocabulary
+    * Rare Tokens:         194
+    * Unique Rare Lemmas:  38
+
+User Level (Info-Only):    UL23 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    23.2
+  - UL (rounded floor):    UL23
+  - AVD (tail-weighted):   265.00
+  - p85 Rank:              115
+  - p95 Rank:              340
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          FAIL
+  - Spanish Submission:    1,361 words (excluding metadata)
+  - English Source:        2,125 words
+  - Percentage:            64.05% of source (allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      SKIP
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        5 (allowed range: 5 - 5)
+  - Actual Count:          0 illustration markers
+    * none

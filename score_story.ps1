@@ -94,19 +94,19 @@ function Resolve-StoryFiles {
                 Write-Warning "Skipping (not found): $p"
             }
         }
-        return $resolved
+        return @($resolved)
     }
 
     # Default: top-level Spanish story files under stories\, skip English mirrors.
     $storiesDir = Join-Path $ScriptRoot 'stories'
     if (-not (Test-Path -LiteralPath $storiesDir)) { return @() }
-    return Get-ChildItem -Path $storiesDir -Directory | ForEach-Object {
+    return @(Get-ChildItem -Path $storiesDir -Directory | ForEach-Object {
         Get-ChildItem -Path $_.FullName -Filter *.txt -File |
             Where-Object { $_.Name -notmatch '_en\.txt$' }
-    } | Select-Object -ExpandProperty FullName
+    } | Select-Object -ExpandProperty FullName)
 }
 
-$files = Resolve-StoryFiles -Inputs $Paths
+$files = @(Resolve-StoryFiles -Inputs $Paths)
 if (-not $files -or $files.Count -eq 0) {
     Write-Host "No story files to measure. Pass a path, e.g.:" -ForegroundColor Yellow
     Write-Host "    .\score_story.ps1 stories\La_Llorona\La_Llorona.txt"

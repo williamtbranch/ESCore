@@ -54,6 +54,11 @@
 .PARAMETER Json
     Emit combined JSON object.
 
+.PARAMETER NoSource
+    Allow scoring when no source text is available. The length gate is marked as
+    failed automatically, but i-score, UL, and illustration metrics are still
+    computed so Spanish-only samples can be evaluated.
+
 .EXAMPLE
     .\drc_free_flow.ps1 -StoryDir stories\Moby_Dick\chapters\Chapter_001_Loomings
 #>
@@ -81,6 +86,8 @@ param(
 
     [switch]$Json,
 
+    [switch]$NoSource,
+
     [string]$DomainLemmas,
 
     [int]$DomainDefaultRank = 320
@@ -102,6 +109,25 @@ function Resolve-InputPath {
     }
 
     return (Join-Path $BaseDir $PathValue)
+}
+
+function Get-CountableText {
+    param([string]$Path)
+
+    $text = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+    $lines = $text -split "`r?`n"
+    $keptLines = foreach ($line in $lines) {
+        if ($line -match '^\s*%%META\b') { continue }
+        $line
+    }
+
+    return ($keptLines -join "`n")
+}
+
+function Get-WordCount {
+    param([string]$Text)
+
+    return ([regex]::Matches($Text, "[\p{L}]+(?:['’-][\p{L}]+)*")).Count
 }
 
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -153,24 +179,26 @@ if (-not (Test-Path -LiteralPath $BaseDir -PathType Container)) {
 }
 
 $SubmissionPath = Resolve-InputPath -PathValue $Submission -BaseDir $BaseDir
-$SourcePath = Resolve-InputPath -PathValue $Source -BaseDir $BaseDir
+$SourcePath = if ($NoSource) { $null } else { Resolve-InputPath -PathValue $Source -BaseDir $BaseDir }
 
 $submissionName = [System.IO.Path]::GetFileName($SubmissionPath)
-$sourceName = [System.IO.Path]::GetFileName($SourcePath)
 if ($submissionName -ine 'story.txt') {
     Write-Host "ERROR: Submission must be named 'story.txt'. Got: $submissionName" -ForegroundColor Red
     exit 1
 }
-if ($sourceName -ine 'source.txt') {
-    Write-Host "ERROR: Source must be named 'source.txt'. Got: $sourceName" -ForegroundColor Red
-    exit 1
+if (-not $NoSource) {
+    $sourceName = [System.IO.Path]::GetFileName($SourcePath)
+    if ($sourceName -ine 'source.txt') {
+        Write-Host "ERROR: Source must be named 'source.txt'. Got: $sourceName" -ForegroundColor Red
+        exit 1
+    }
 }
 
 if (-not (Test-Path -LiteralPath $SubmissionPath -PathType Leaf)) {
     Write-Host "ERROR: submission file not found: $Submission" -ForegroundColor Red
     exit 1
 }
-if (-not (Test-Path -LiteralPath $SourcePath -PathType Leaf)) {
+if ((-not $NoSource) -and (-not (Test-Path -LiteralPath $SourcePath -PathType Leaf))) {
     Write-Host "ERROR: source file not found: $Source" -ForegroundColor Red
     exit 1
 }
@@ -235,18 +263,35 @@ else {
     $ul = $ulParsed
 }
 
-$wordJson = & $PythonCmd @PythonPrefixArgs $WordTool --json --min-percent $MinPercent --max-percent $MaxPercent $SubmissionPath $SourcePath
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: word-count ratio tool failed." -ForegroundColor Red
-    exit $LASTEXITCODE
-}
+$submissionWords = Get-WordCount -Text (Get-CountableText -Path $SubmissionPath)
 
-try {
-    $wc = $wordJson | ConvertFrom-Json
+if ($NoSource) {
+    $wc = [pscustomobject][ordered]@{
+        submission_words = $submissionWords
+        source_words = 0
+        percent_of_source = $null
+        min_percent = [double]$MinPercent
+        max_percent = [double]$MaxPercent
+        pass = $false
+        no_source = $true
+    }
 }
-catch {
-    Write-Host "ERROR: Could not parse word-count tool JSON output." -ForegroundColor Red
-    exit 1
+else {
+    $wordJson = & $PythonCmd @PythonPrefixArgs $WordTool --json --min-percent $MinPercent --max-percent $MaxPercent $SubmissionPath $SourcePath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: word-count ratio tool failed." -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
+    try {
+        $wc = $wordJson | ConvertFrom-Json
+    }
+    catch {
+        Write-Host "ERROR: Could not parse word-count tool JSON output." -ForegroundColor Red
+        exit 1
+    }
+
+    $wc | Add-Member -NotePropertyName no_source -NotePropertyValue $false -Force
 }
 
 $ulExact = [double]$ul.ul_exact
@@ -329,6 +374,7 @@ $result = [ordered]@{
         percent_of_source = [double]$wc.percent_of_source
         min_percent = [double]$wc.min_percent
         max_percent = [double]$wc.max_percent
+        no_source = [bool]$wc.no_source
         pass = [bool]$wc.pass
     }
     illustration_check = [ordered]@{
@@ -362,12 +408,22 @@ else {
     Write-Host "Free-flow DRC"
     Write-Host "-------------"
     Write-Host ("Submission: {0}" -f $result.submission)
-    Write-Host ("Source:     {0}" -f $result.source)
+    if ($result.word_count_check.no_source) {
+        Write-Host "Source:     [none provided]"
+    }
+    else {
+        Write-Host ("Source:     {0}" -f $result.source)
+    }
     Write-Host ""
     Write-Host ("i-score:    iLevel={0:N1} (limit <= {1:N1}, cov {2:N2}) [{3}]" -f $result.i_score_check.i_level, $result.i_score_check.max_ilevel, $result.i_score_check.coverage, $iStatus)
     Write-Host ("  +1 tail:  {0:N1}% of text is unpunished (tokens: {1}, unique: {2})" -f $result.i_score_check.plus1_pct, $result.i_score_check.plus1_tokens, $result.i_score_check.plus1_unique)
     Write-Host ("  vocab:    iRank={0:N0}  (UL_exact={1:N1} -> floor UL{2} info-only)" -f $result.i_score_check.i_rank, $result.ul_check.ul_exact, $result.ul_check.ul_floor)
-    Write-Host ("Word gate:  {0}/{1} words = {2:N2}% (range {3:N1}% - {4:N1}%) [{5}]" -f $result.word_count_check.submission_words, $result.word_count_check.source_words, $result.word_count_check.percent_of_source, $result.word_count_check.min_percent, $result.word_count_check.max_percent, $wcStatus)
+    if ($result.word_count_check.no_source) {
+        Write-Host ("Word gate:  {0} words; no source provided -> auto-fail length gate [{1}]" -f $result.word_count_check.submission_words, $wcStatus)
+    }
+    else {
+        Write-Host ("Word gate:  {0}/{1} words = {2:N2}% (range {3:N1}% - {4:N1}%) [{5}]" -f $result.word_count_check.submission_words, $result.word_count_check.source_words, $result.word_count_check.percent_of_source, $result.word_count_check.min_percent, $result.word_count_check.max_percent, $wcStatus)
+    }
     if ($result.illustration_check.evaluated) {
         Write-Host ("Illus gate: {0} found; need {1} (allowed {2}-{3}, target 1/{4} words, tol=min(1,{5:N0}%)) [{6}]" -f $result.illustration_check.actual_count, $result.illustration_check.required_count, $result.illustration_check.min_allowed, $result.illustration_check.max_allowed, $result.illustration_check.words_per_illustration, $result.illustration_check.tolerance_percent, $illStatus)
     }

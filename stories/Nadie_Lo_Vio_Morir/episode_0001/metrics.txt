@@ -1,0 +1,38 @@
+﻿episode 0001
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                21.1 (limit <= 25.5)
+  - iRank:                 158 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       15.0% of running text is unpunished vocabulary
+    * Rare Tokens:         222
+    * Unique Rare Lemmas:  60
+
+User Level (Info-Only):    UL23 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    23.4
+  - UL (rounded floor):    UL23
+  - AVD (tail-weighted):   277.00
+  - p85 Rank:              157
+  - p95 Rank:              337
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          PASS
+  - Spanish Submission:    1,617 words (excluding metadata)
+  - English Source:        1,763 words
+  - Percentage:            91.72% of source (allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      FAIL
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        6 (allowed range: 6 - 6)
+  - Actual Count:          0 illustration markers
+    * none

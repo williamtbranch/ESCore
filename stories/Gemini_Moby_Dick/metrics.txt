@@ -1,0 +1,38 @@
+﻿Gemini Moby Dick
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                25.1 (limit <= 25.5)
+  - iRank:                 420 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       15.0% of running text is unpunished vocabulary
+    * Rare Tokens:         336
+    * Unique Rare Lemmas:  152
+
+User Level (Info-Only):    UL28 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    28.9
+  - UL (rounded floor):    UL28
+  - AVD (tail-weighted):   1,042.33
+  - p85 Rank:              287
+  - p95 Rank:              1,420
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          PASS
+  - Spanish Submission:    2,297 words (excluding metadata)
+  - English Source:        2,322 words
+  - Percentage:            98.92% of source (allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      FAIL
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        9 (allowed range: 8 - 10)
+  - Actual Count:          0 illustration markers
+    * none

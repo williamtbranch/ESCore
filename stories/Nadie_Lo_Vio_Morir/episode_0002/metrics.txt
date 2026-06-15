@@ -1,0 +1,42 @@
+﻿episode 0002
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                20.4 (limit <= 25.5)
+  - iRank:                 135 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       15.0% of running text is unpunished vocabulary
+    * Rare Tokens:         253
+    * Unique Rare Lemmas:  38
+
+User Level (Info-Only):    UL22 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    22.2
+  - UL (rounded floor):    UL22
+  - AVD (tail-weighted):   207.67
+  - p85 Rank:              135
+  - p95 Rank:              244
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          FAIL
+  - Spanish Submission:    1,801 words (excluding metadata)
+  - English Source:        [none provided]
+  - Percentage:            n/a (auto-fail; allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      SKIP
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        7 (allowed range: 6 - 8)
+  - Actual Count:          5 illustration markers
+    * ep02_village_day
+    * ep02_marco_ultimatum
+    * ep02_tomas_implores_ines
+    * ep02_rosa_confronts_tomas
+    * ep02_confession_assembly

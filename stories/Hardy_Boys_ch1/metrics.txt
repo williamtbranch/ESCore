@@ -1,0 +1,38 @@
+﻿Hardy Boys ch1
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                25.2 (limit <= 25.5)
+  - iRank:                 426 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       14.2% of running text is unpunished vocabulary
+    * Rare Tokens:         259
+    * Unique Rare Lemmas:  123
+
+User Level (Info-Only):    UL29 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    29.1
+  - UL (rounded floor):    UL29
+  - AVD (tail-weighted):   1,109.33
+  - p85 Rank:              332
+  - p95 Rank:              1,498
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          FAIL
+  - Spanish Submission:    1,867 words (excluding metadata)
+  - English Source:        [none provided]
+  - Percentage:            n/a (auto-fail; allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      SKIP
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        7 (allowed range: 6 - 8)
+  - Actual Count:          0 illustration markers
+    * none

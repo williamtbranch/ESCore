@@ -1,0 +1,38 @@
+﻿La Llorona
+DRC Metrics Log — 2026-06-15
+
+====================================================================
+OVERALL STATUS: FAIL
+====================================================================
+
+1. TEXT DIFFICULTY GATES
+------------------------
+i-score (Primary Gate):    PASS
+  - iLevel:                22.9 (limit <= 25.5)
+  - iRank:                 248 (85% boundary word frequency rank)
+  - Coverage Level:        0.85 (85% of text in core, 15% in +1 tail)
+  - +1 Tail Details:       14.2% of running text is unpunished vocabulary
+    * Rare Tokens:         302
+    * Unique Rare Lemmas:  86
+
+User Level (Info-Only):    UL26 (Gating bypassed per free-flow policy)
+  - UL (exact decimal):    26.0
+  - UL (rounded floor):    UL26
+  - AVD (tail-weighted):   519.67
+  - p85 Rank:              233
+  - p95 Rank:              663
+
+2. LENGTH GATE
+--------------
+Word Count Ratio:          FAIL
+  - Spanish Submission:    2,167 words (excluding metadata)
+  - English Source:        [none provided]
+  - Percentage:            n/a (auto-fail; allowed range: 75.0% - 120.0%)
+
+3. PACKAGING GATE
+-----------------
+Illustration Density:      SKIP
+  - Target Density:        1 illustration per 250 words
+  - Required Count:        9 (allowed range: 8 - 10)
+  - Actual Count:          0 illustration markers
+    * none
